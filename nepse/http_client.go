@@ -1,15 +1,15 @@
 package nepse
 
 import (
-    "context"
-    "crypto/tls"
-    "encoding/json"
-    "io"
-    "net/http"
-    "strings"
-    "time"
+	"context"
+	"crypto/tls"
+	"encoding/json"
+	"io"
+	"net/http"
+	"strings"
+	"time"
 
-    "github.com/voidarchive/nepseauth/auth"
+	"github.com/voidarchive/nepseauth/auth"
 )
 
 // HTTPClient implements the NEPSE HTTP client with authentication
@@ -22,35 +22,35 @@ type HTTPClient struct {
 
 // NewHTTPClient creates a new HTTP client for NEPSE API
 func NewHTTPClient(options *Options) (*HTTPClient, error) {
-    if options == nil {
-        options = DefaultOptions()
-    }
+	if options == nil {
+		options = DefaultOptions()
+	}
 
 	if options.Config == nil {
 		options.Config = DefaultConfig()
 	}
 
-    // Create or use provided HTTP client
-    httpClient := options.HTTPClient
-    if httpClient == nil {
-        // Only construct transport if no client supplied
-        transport := &http.Transport{
-            TLSClientConfig: &tls.Config{ //nolint:gosec // user controls via TLSVerification
-                InsecureSkipVerify: !options.TLSVerification,
-            },
-            MaxIdleConns:        100,
-            MaxIdleConnsPerHost: 10,
-            IdleConnTimeout:     90 * time.Second,
-            // Rely on Go's transparent gzip decompression (DisableCompression=false)
-        }
-        httpClient = &http.Client{
-            Timeout:   options.HTTPTimeout,
-            Transport: transport,
-        }
-    } else if httpClient.Timeout == 0 {
-        // Ensure a reasonable default timeout if caller didn't set one
-        httpClient.Timeout = options.HTTPTimeout
-    }
+	// Create or use provided HTTP client
+	httpClient := options.HTTPClient
+	if httpClient == nil {
+		// Only construct transport if no client supplied
+		transport := &http.Transport{
+			TLSClientConfig: &tls.Config{ //nolint:gosec // user controls via TLSVerification
+				InsecureSkipVerify: !options.TLSVerification,
+			},
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 10,
+			IdleConnTimeout:     90 * time.Second,
+			// Rely on Go's transparent gzip decompression (DisableCompression=false)
+		}
+		httpClient = &http.Client{
+			Timeout:   options.HTTPTimeout,
+			Transport: transport,
+		}
+	} else if httpClient.Timeout == 0 {
+		// Ensure a reasonable default timeout if caller didn't set one
+		httpClient.Timeout = options.HTTPTimeout
+	}
 
 	nepseClient := &HTTPClient{
 		client:  httpClient,
@@ -145,10 +145,10 @@ func (h *HTTPClient) doRequest(req *http.Request) (*http.Response, error) {
 
 	for attempt := 0; attempt <= h.options.MaxRetries; attempt++ {
 		if attempt > 0 {
-            // Calculate backoff delay
-            delay := minDuration(h.options.RetryDelay*time.Duration(1<<uint(attempt-1)), 30*time.Second)
-            time.Sleep(delay)
-        }
+			// Calculate backoff delay
+			delay := minDuration(h.options.RetryDelay*time.Duration(1<<uint(attempt-1)), 30*time.Second)
+			time.Sleep(delay)
+		}
 
 		resp, err := h.client.Do(req)
 		if err != nil {
@@ -174,8 +174,8 @@ func (h *HTTPClient) doRequest(req *http.Request) (*http.Response, error) {
 
 // getResponseBody handles gzip decompression
 func (h *HTTPClient) getResponseBody(resp *http.Response) (io.ReadCloser, error) {
-    // Let net/http handle decompression transparently.
-    return resp.Body, nil
+	// Let net/http handle decompression transparently.
+	return resp.Body, nil
 }
 
 // setCommonHeaders sets common HTTP headers for requests

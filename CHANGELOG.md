@@ -63,4 +63,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rate limiting improvements
 - Additional security enhancements
 - Performance monitoring hooks
-
