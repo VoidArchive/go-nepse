@@ -180,6 +180,11 @@ func (c *Client) TopTenTurnover(ctx context.Context) ([]TopTurnoverEntry, error)
 
 // TodaysPrices returns price data for all securities on a given business date.
 // If businessDate is empty, returns data for the current trading day.
+//
+// Note: This endpoint may return empty results. NEPSE's web interface uses a POST request
+// that requires additional authentication not currently supported by this library.
+// For current prices, consider using [Client.TopGainers], [Client.TopLosers], or
+// [Client.Company] which return LTP (last traded price) data.
 func (c *Client) TodaysPrices(ctx context.Context, businessDate string) ([]TodayPrice, error) {
 	endpoint := c.config.Endpoints.TodaysPrice
 	if businessDate != "" {
@@ -424,7 +429,9 @@ func (c *Client) FloorSheet(ctx context.Context) ([]FloorSheetEntry, error) {
 }
 
 // FloorSheetOf returns all trades for a specific security on a given business date.
-// Note: This endpoint may return 403 Forbidden if NEPSE has restricted access.
+//
+// IMPORTANT: As of December 2025, NEPSE has blocked this endpoint at the server level.
+// All requests return 403 Forbidden. Use [Client.FloorSheet] instead for general floorsheet data.
 func (c *Client) FloorSheetOf(ctx context.Context, securityID int32, businessDate string) ([]FloorSheetEntry, error) {
 	params := url.Values{}
 	params.Set("businessDate", businessDate)
@@ -459,7 +466,9 @@ func (c *Client) FloorSheetOf(ctx context.Context, securityID int32, businessDat
 }
 
 // FloorSheetBySymbol returns all trades for a specific security by symbol on a given date.
-// Note: This endpoint may return 403 Forbidden if NEPSE has restricted access.
+//
+// IMPORTANT: As of December 2025, NEPSE has blocked this endpoint at the server level.
+// All requests return 403 Forbidden. Use [Client.FloorSheet] instead for general floorsheet data.
 func (c *Client) FloorSheetBySymbol(ctx context.Context, symbol string, businessDate string) ([]FloorSheetEntry, error) {
 	security, err := c.findSecurityBySymbol(ctx, symbol)
 	if err != nil {

@@ -389,8 +389,11 @@ func main() {
 
 		if securityID != 0 {
 			printSubSection(fmt.Sprintf("Floorsheet: %s (%s)", symbol, bizDate))
+			// Note: NEPSE has blocked the company-specific floorsheet endpoint (returns 403).
+			// This is expected to fail. Use FloorSheet() for general floorsheet data instead.
 			if fs, err := client.FloorSheetOf(ctx, securityID, bizDate); err != nil {
 				printError("FloorSheetOf", err)
+				printDim("(This endpoint is blocked by NEPSE - expected behavior)")
 			} else {
 				printKV("Total Trades", fmt.Sprintf("%d", len(fs)))
 			}
