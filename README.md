@@ -4,6 +4,13 @@ A modern, type-safe Go client library for the NEPSE (Nepal Stock Exchange) API. 
 
 > **Disclaimer**: This is an **unofficial** library that interacts with NEPSE's undocumented internal API. It is intended for educational and personal use only. **Do not use this library for commercial projects.** The API may change without notice, and there are no guarantees of accuracy, reliability, or availability. Use at your own risk.
 
+![NEPSE Go Demo](assets/market_overview.png)
+
+<p align="center">
+  <img src="assets/top_lists.png" width="49%" />
+  <img src="assets/sector_distribution.png" width="49%" />
+</p>
+
 ## Features
 
 - **Type Safety** - All responses are properly typed structs
