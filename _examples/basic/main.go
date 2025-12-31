@@ -461,9 +461,9 @@ func main() {
 			} else {
 				printKV("Data Points", fmt.Sprintf("%d", len(g.Data)))
 				if len(g.Data) > 0 {
-					fmt.Printf("    %s%-12s %12s%s\n", dim, "Date", "Value", reset)
+					fmt.Printf("    %s%-20s %12s%s\n", dim, "Timestamp", "Value", reset)
 					for _, d := range g.Data[:min(5, len(g.Data))] {
-						fmt.Printf("    %-12s %12.2f\n", d.Date, d.Value)
+						fmt.Printf("    %-20d %12.2f\n", d.Timestamp, d.Value)
 					}
 					if len(g.Data) > 5 {
 						printDim(fmt.Sprintf("... and %d more", len(g.Data)-5))

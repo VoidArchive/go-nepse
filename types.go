@@ -1,5 +1,7 @@
 package nepse
 
+import "encoding/json"
+
 // MarketSummaryItem represents a single item in the market summary response.
 type MarketSummaryItem struct {
 	Detail string  `json:"detail"`
@@ -247,14 +249,41 @@ type TopListEntry struct {
 }
 
 // GraphDataPoint represents a single data point in graph data.
+// The NEPSE API returns different formats for different endpoints:
+// - Index graphs: [timestamp, value] arrays
+// - Scrip graphs: {"time": timestamp, "value": value} objects
 type GraphDataPoint struct {
-	Date  string  `json:"date"`
-	Value float64 `json:"value"`
+	Timestamp int64
+	Value     float64
+}
+
+// UnmarshalJSON implements custom unmarshaling for GraphDataPoint.
+// Handles both array format [timestamp, value] and object format {"time": ..., "value": ...}.
+func (g *GraphDataPoint) UnmarshalJSON(data []byte) error {
+	// Try array format first (index graphs): [timestamp, value]
+	var arr [2]float64
+	if err := json.Unmarshal(data, &arr); err == nil {
+		g.Timestamp = int64(arr[0])
+		g.Value = arr[1]
+		return nil
+	}
+
+	// Try object format (scrip graphs): {"time": ..., "value": ...}
+	var obj struct {
+		Time  int64   `json:"time"`
+		Value float64 `json:"value"`
+	}
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return err
+	}
+	g.Timestamp = obj.Time
+	g.Value = obj.Value
+	return nil
 }
 
 // GraphResponse represents graph data response.
 type GraphResponse struct {
-	Data []GraphDataPoint `json:"data"`
+	Data []GraphDataPoint
 }
 
 // CompanyDetailsRaw represents the raw nested company details response.

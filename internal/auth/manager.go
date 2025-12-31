@@ -37,6 +37,16 @@ type TokenResponse struct {
 	ServerTime   int64  `json:"serverTime"`
 }
 
+// Salts holds the 5 salt values from the NEPSE token response.
+// These are used to compute POST payload IDs for certain endpoints.
+type Salts struct {
+	Salt1 int
+	Salt2 int
+	Salt3 int
+	Salt4 int
+	Salt5 int
+}
+
 // Manager provides thread-safe access to NEPSE authentication tokens.
 // It uses singleflight to prevent thundering herd when multiple goroutines
 // request tokens simultaneously during refresh.
@@ -48,6 +58,7 @@ type Manager struct {
 
 	mu          sync.RWMutex
 	accessToken string
+	salts       Salts
 	tokenTS     time.Time
 
 	sf singleflight.Group
@@ -93,6 +104,23 @@ func (m *Manager) AccessToken(ctx context.Context) (string, error) {
 	return m.accessToken, nil
 }
 
+// GetSalts returns the current salt values, refreshing the token if expired.
+// Salts are used to compute POST payload IDs for graph endpoints.
+func (m *Manager) GetSalts(ctx context.Context) (Salts, error) {
+	if m.isValid() {
+		m.mu.RLock()
+		s := m.salts
+		m.mu.RUnlock()
+		return s, nil
+	}
+	if err := m.update(ctx); err != nil {
+		return Salts{}, err
+	}
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.salts, nil
+}
+
 // ForceUpdate invalidates the cache and fetches fresh tokens.
 // Used after receiving 401 to force re-authentication.
 func (m *Manager) ForceUpdate(ctx context.Context) error {
@@ -135,6 +163,13 @@ func (m *Manager) update(ctx context.Context) error {
 
 		m.mu.Lock()
 		m.accessToken = access
+		m.salts = Salts{
+			Salt1: resp.Salt1,
+			Salt2: resp.Salt2,
+			Salt3: resp.Salt3,
+			Salt4: resp.Salt4,
+			Salt5: resp.Salt5,
+		}
 		if ts > 0 {
 			m.tokenTS = time.Unix(ts, 0)
 		} else {
