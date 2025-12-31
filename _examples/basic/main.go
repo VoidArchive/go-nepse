@@ -51,7 +51,7 @@ func main() {
 
 	// Determine effective business date
 	if bizDate == "" {
-		bizDate = lastWeekday(now).Format("2006-01-02")
+		bizDate = lastTradingDay(now).Format("2006-01-02")
 	}
 
 	// Track security ID for later use
@@ -84,8 +84,6 @@ func main() {
 		printKV("Traded Shares", formatNumber(summary.TotalTradedShares))
 		printKV("Transactions", formatNumber(summary.TotalTransactions))
 		printKV("Scrips Traded", formatNumber(summary.TotalScripsTraded))
-		printKV("Market Cap", formatNumber(summary.TotalMarketCapitalization))
-		printKV("Float Market Cap", formatNumber(summary.TotalFloatMarketCap))
 	}
 
 	// NEPSE Index
@@ -133,21 +131,21 @@ func main() {
 	printSubSection("Active Securities")
 	if live, err := client.GetLiveMarket(ctx); err != nil {
 		printError("GetLiveMarket", err)
+	} else if len(live) == 0 {
+		printDim("No live data available (market closed)")
 	} else {
 		printKV("Total Active", fmt.Sprintf("%d securities", len(live)))
-		if len(live) > 0 {
-			fmt.Printf("    %s%-10s %10s %10s %12s%s\n", dim, "Symbol", "LTP", "Change%", "Volume", reset)
-			for _, entry := range live[:min(5, len(live))] {
-				changeColor := green
-				if entry.PercentageChange < 0 {
-					changeColor = red
-				}
-				fmt.Printf("    %-10s %10.2f %s%+10.2f%s %12d\n",
-					entry.Symbol, entry.LastTradedPrice, changeColor, entry.PercentageChange, reset, entry.TotalTradeQuantity)
+		fmt.Printf("    %s%-10s %10s %10s %12s%s\n", dim, "Symbol", "LTP", "Change%", "Volume", reset)
+		for _, entry := range live[:min(5, len(live))] {
+			changeColor := green
+			if entry.PercentageChange < 0 {
+				changeColor = red
 			}
-			if len(live) > 5 {
-				printDim(fmt.Sprintf("... and %d more", len(live)-5))
-			}
+			fmt.Printf("    %-10s %10.2f %s%+10.2f%s %12d\n",
+				entry.Symbol, entry.LastTradedPrice, changeColor, entry.PercentageChange, reset, entry.TotalTradeQuantity)
+		}
+		if len(live) > 5 {
+			printDim(fmt.Sprintf("... and %d more", len(live)-5))
 		}
 	}
 
@@ -155,6 +153,8 @@ func main() {
 	printSubSection("Supply & Demand")
 	if sd, err := client.GetSupplyDemand(ctx); err != nil {
 		printError("GetSupplyDemand", err)
+	} else if len(sd.SupplyList) == 0 && len(sd.DemandList) == 0 {
+		printDim("No supply/demand data available (market closed)")
 	} else {
 		printKV("Supply Orders", fmt.Sprintf("%d securities", len(sd.SupplyList)))
 		printKV("Demand Orders", fmt.Sprintf("%d securities", len(sd.DemandList)))
@@ -290,17 +290,17 @@ func main() {
 	printSubSection(fmt.Sprintf("Today's Prices (%s)", bizDate))
 	if prices, err := client.GetTodaysPrices(ctx, bizDate); err != nil {
 		printError("GetTodaysPrices", err)
+	} else if len(prices) == 0 {
+		printDim("No price data available (market closed or no trades on this date)")
 	} else {
 		printKV("Securities with Data", fmt.Sprintf("%d", len(prices)))
-		if len(prices) > 0 {
-			fmt.Printf("    %s%-10s %10s %10s %10s %10s%s\n", dim, "Symbol", "Open", "High", "Low", "Close", reset)
-			for _, p := range prices[:min(5, len(prices))] {
-				fmt.Printf("    %-10s %10.2f %10.2f %10.2f %10.2f\n",
-					p.Symbol, p.OpenPrice, p.HighPrice, p.LowPrice, p.ClosePrice)
-			}
-			if len(prices) > 5 {
-				printDim(fmt.Sprintf("... and %d more", len(prices)-5))
-			}
+		fmt.Printf("    %s%-10s %10s %10s %10s %10s%s\n", dim, "Symbol", "Open", "High", "Low", "Close", reset)
+		for _, p := range prices[:min(5, len(prices))] {
+			fmt.Printf("    %-10s %10.2f %10.2f %10.2f %10.2f\n",
+				p.Symbol, p.OpenPrice, p.HighPrice, p.LowPrice, p.ClosePrice)
+		}
+		if len(prices) > 5 {
+			printDim(fmt.Sprintf("... and %d more", len(prices)-5))
 		}
 	}
 
@@ -544,15 +544,13 @@ func formatNumber(n float64) string {
 	return fmt.Sprintf("%.2f", n)
 }
 
-func lastWeekday(t time.Time) time.Time {
-	switch t.Weekday() {
-	case time.Saturday:
-		return t.AddDate(0, 0, -1)
-	case time.Sunday:
-		return t.AddDate(0, 0, -2)
-	default:
-		return t
+// lastTradingDay returns the most recent trading day.
+// Nepal's stock market operates Sunday-Friday; Saturday is the weekly holiday.
+func lastTradingDay(t time.Time) time.Time {
+	if t.Weekday() == time.Saturday {
+		return t.AddDate(0, 0, -1) // Go back to Friday
 	}
+	return t
 }
 
 func min(a, b int) int {
