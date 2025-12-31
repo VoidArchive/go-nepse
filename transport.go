@@ -1,6 +1,7 @@
 package nepse
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -112,8 +113,9 @@ func (c *Client) doRequest(req *http.Request) (*http.Response, error) {
 }
 
 func (c *Client) setCommonHeaders(req *http.Request) {
-	// Standard headers
-	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 "+UserAgent)
+	// Standard headers - use pure browser UA without library identifier
+	// Some NEPSE endpoints reject requests with non-browser user agents
+	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
 	req.Header.Set("Cache-Control", "no-cache")
@@ -199,4 +201,90 @@ func (c *Client) apiRequestRaw(ctx context.Context, endpoint string) ([]byte, er
 // This is for debugging API responses.
 func (c *Client) DebugRawRequest(ctx context.Context, endpoint string) ([]byte, error) {
 	return c.apiRequestRaw(ctx, endpoint)
+}
+
+// doAuthenticatedPostRequest executes an authenticated POST API request.
+func (c *Client) doAuthenticatedPostRequest(ctx context.Context, endpoint string, body any, tokenRetry bool) (*http.Response, error) {
+	token, err := c.authManager.AccessToken(ctx)
+	if err != nil {
+		return nil, NewInternalError("failed to get access token", err)
+	}
+
+	var bodyReader io.Reader
+	if body != nil {
+		bodyBytes, err := json.Marshal(body)
+		if err != nil {
+			return nil, NewInternalError("failed to marshal request body", err)
+		}
+		bodyReader = bytes.NewReader(bodyBytes)
+	}
+
+	url := c.config.BaseURL + endpoint
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bodyReader)
+	if err != nil {
+		return nil, NewInternalError("failed to create request", err)
+	}
+
+	auth.SetAuthHeader(req, token)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	c.setCommonHeaders(req)
+
+	resp, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Retry once on 401 with fresh token
+	if resp.StatusCode == http.StatusUnauthorized && !tokenRetry {
+		_ = resp.Body.Close()
+		if err := c.authManager.ForceUpdate(ctx); err != nil {
+			return nil, NewInternalError("failed to refresh token", err)
+		}
+		return c.doAuthenticatedPostRequest(ctx, endpoint, body, true)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		_ = resp.Body.Close()
+		return nil, MapHTTPStatusToError(resp.StatusCode, resp.Status)
+	}
+
+	return resp, nil
+}
+
+// apiPostRequest makes an authenticated POST request and decodes the JSON response.
+func (c *Client) apiPostRequest(ctx context.Context, endpoint string, body any, result any) error {
+	resp, err := c.doAuthenticatedPostRequest(ctx, endpoint, body, false)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if err := json.NewDecoder(resp.Body).Decode(result); err != nil {
+		return NewInternalError("failed to decode response", err)
+	}
+	return nil
+}
+
+// apiPostRequestRaw makes an authenticated POST request and returns raw bytes.
+func (c *Client) apiPostRequestRaw(ctx context.Context, endpoint string, body any) ([]byte, error) {
+	resp, err := c.doAuthenticatedPostRequest(ctx, endpoint, body, false)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	return io.ReadAll(resp.Body)
+}
+
+// DebugRawPostRequest makes an authenticated POST request and returns the raw response.
+// This is for debugging API responses.
+func (c *Client) DebugRawPostRequest(ctx context.Context, endpoint string, body any) ([]byte, error) {
+	return c.apiPostRequestRaw(ctx, endpoint, body)
+}
+
+// DebugDecodedToken returns the WASM-decoded access token for debugging.
+// This is the token that would be sent in Authorization headers.
+func (c *Client) DebugDecodedToken(ctx context.Context) (string, error) {
+	return c.authManager.AccessToken(ctx)
 }

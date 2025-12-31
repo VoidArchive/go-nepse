@@ -96,7 +96,16 @@ func (m *Manager) AccessToken(ctx context.Context) (string, error) {
 // ForceUpdate invalidates the cache and fetches fresh tokens.
 // Used after receiving 401 to force re-authentication.
 func (m *Manager) ForceUpdate(ctx context.Context) error {
+	m.invalidate()
 	return m.update(ctx)
+}
+
+// invalidate clears the cached token, forcing the next update to fetch fresh tokens.
+func (m *Manager) invalidate() {
+	m.mu.Lock()
+	m.accessToken = ""
+	m.tokenTS = time.Time{}
+	m.mu.Unlock()
 }
 
 func (m *Manager) isValid() bool {
