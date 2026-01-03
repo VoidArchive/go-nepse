@@ -12,89 +12,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integration tests
 - Rate limiting improvements
 
+## [0.2.0] - 2026-01-03
+
+### Added
+- **Company Fundamentals**: `CompanyProfile`, `BoardOfDirectors`, `Reports`, `CorporateActions`, `Dividends` endpoints (with BySymbol variants)
+- **New Types**: `CompanyProfile`, `BoardMember`, `Report`, `FiscalReport`, `CorporateAction`, `Dividend`, `DividendNotice`
+- **Helper Methods**: `FullName()`, `IsAnnual()`, `IsQuarterly()`, `HasCashDividend()`, `HasBonusDividend()`
+- **Debug Utilities**: `_examples/debug/main.go` for API discovery
+
+### Changed
+- Updated examples and docs with Company Fundamentals section
+- Added note on Corporate Actions vs Dividends timing difference
+
+### Closes
+- Issue #1: Dividends, reports, news endpoints
+- Issue #2: Company fundamentals (PE, EPS, book value)
+
 ## [0.1.2] - 2026-01-01
 
 ### Added
-- **Graph Endpoints**: Implemented dynamic POST payload ID generation for graph endpoints, making them fully functional.
-- **Data Unmarshaling**: Added robust graph data point unmarshaling.
-- **Authentication**: Enhanced HTTP transport with robust authentication token management and retry mechanisms.
+- **Graph Endpoints**: Dynamic POST payload ID generation
+- **Data Unmarshaling**: Robust graph data point handling
+- **Authentication**: Token management with retry mechanisms
 
 ### Changed
-- **BREAKING**: Refactored client method names to remove the `Get` prefix for more idiomatic Go (e.g., `MarketSummary()` instead of `GetMarketSummary()`).
-- Updated `README.md` to remove the known issue regarding graph endpoints.
-- Improved documentation for `TodaysPrices`, `FloorSheetOf`, and `FloorSheetBySymbol` regarding endpoint behavior and alternatives.
+- **BREAKING**: Removed `Get` prefix from methods (`MarketSummary()` instead of `GetMarketSummary()`)
+- Improved docs for `TodaysPrices`, `FloorSheetOf`, `FloorSheetBySymbol`
 
 ### Fixed
-- Robustness improvements in token management and error handling during network issues.
+- Token management robustness during network issues
 
 ## [0.1.1] - 2025-12-31
 
 ### Fixed
-- **GetCompanyDetails**: Fixed missing `/` in endpoint URL causing 404 errors
-- **GetPriceVolumeHistory**: Fixed missing `/` in endpoint URL causing 404 errors
-- **GetMarketDepth**: Fixed missing `/` in endpoint URL and updated response type to match API
-- **GetFloorSheetOf**: Fixed missing `/` in endpoint URL
-- **GetDailyScripPriceGraph**: Fixed missing `/` in endpoint URL
-- **GetSupplyDemand**: Changed return type to match actual API response format (`*SupplyDemandData`)
-- **GetSectorScrips**: Now uses company list which includes sector information
-- **GetNepseSubIndices**: Fixed filtering logic, uses map-based exclusion
-- **PriceHistory**: Updated struct to match actual API response fields
-- **MarketDepth**: Updated struct to match actual API response format
-- Pointer-to-loop-variable bugs in `findSecurityByID` and `findSecurityBySymbol`
-- Silently swallowed errors in `GetSupplyDemand` and `GetFloorSheet`
-- All lint issues (unchecked error returns in `transport.go`)
-- URL encoding now uses `url.Values` for proper escaping
+- Missing `/` in endpoint URLs for `GetCompanyDetails`, `GetPriceVolumeHistory`, `GetMarketDepth`, `GetFloorSheetOf`, `GetDailyScripPriceGraph`
+- Response type mismatches in `GetSupplyDemand`, `PriceHistory`, `MarketDepth`
+- `GetSectorScrips` now uses company list with sector info
+- `GetNepseSubIndices` filtering logic
+- Pointer-to-loop-variable bugs, swallowed errors, lint issues
+- URL encoding via `url.Values`
 
 ### Changed
-- **BREAKING**: `GetSupplyDemand()` now returns `*SupplyDemandData` instead of `[]SupplyDemandEntry`
-- Added constants for NEPSE index IDs (58, 57, 62, 63)
-- Improved all doc comments for clarity and accuracy
-- Refactored `graphs.go` to use `IndexType` enum and reduce duplication
+- **BREAKING**: `GetSupplyDemand()` returns `*SupplyDemandData`
+- Added NEPSE index ID constants
+- Refactored `graphs.go` with `IndexType` enum
 
 ### Removed
-- Unused `SupplyDemandEntry` type (replaced by `SupplyDemandData`)
+- `SupplyDemandEntry` type
 
 ## [0.0.1] - 2025-12-30
 
 ### Added
-- Initial release of NEPSE Go Library
-- Complete NEPSE API coverage with 50+ endpoints
+- Initial release with 50+ endpoints
 - Type-safe dual API pattern (ID and Symbol methods)
-- Automatic token management with WASM-based authentication
-- Comprehensive market data access:
-  - Market summaries and status
-  - Security and company information
-  - Price and trading data
-  - Floor sheet data
-  - Top lists (gainers, losers, etc.)
-  - Market indices and sub-indices
-- Fast sector grouping without API calls
-- Built-in retry logic with exponential backoff
-- Context support for timeouts and cancellation
-- Structured error handling with typed errors
-- Connection pooling and HTTP optimization
-- Production-ready examples and documentation
+- WASM-based token management
+- Market data: summaries, securities, prices, floor sheets, top lists, indices
+- Retry logic with exponential backoff
+- Context support, structured errors, connection pooling
 
-### Performance Improvements
-- Optimized `GetSectorScrips()` method — ~75% faster execution (5–10s → ~2.3s)
-- Reduced API calls from 50+ to 1 for sector data
-- HTTP connection pooling for efficiency
-- Smart retry mechanisms
+### Performance
+- `GetSectorScrips()` ~75% faster (5-10s → ~2.3s)
+- Single API call for sector data
 
 ### Security
-- Comprehensive security audit completed
-- Configurable TLS verification (may be required due to NEPSE server issues)
-- Secure token lifecycle management with automatic refresh
-- Input validation across all public APIs
-- Safe error handling with no sensitive data leakage
-- No sensitive data exposed in logs
-
-### Documentation
-- Comprehensive README with full API coverage
-- GoDoc comments for all public APIs
-- Working examples in `cmd/examples/`
-- Security best practices documented
+- Configurable TLS, secure token lifecycle, input validation
 
 ### Known Issues
-- Graph endpoints currently return empty data due to NEPSE backend issues
-- Issue is server-side, not a client library defect
+- Graph endpoints return empty (server-side issue)

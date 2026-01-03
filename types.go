@@ -370,3 +370,216 @@ type PaginatedResponse[T any] struct {
 	Last             bool  `json:"last"`
 	NumberOfElements int32 `json:"numberOfElements"`
 }
+
+// CompanyProfile represents detailed company profile information.
+type CompanyProfile struct {
+	CompanyName          string `json:"companyName"`
+	CompanyEmail         string `json:"companyEmail"`
+	CompanyProfile       string `json:"companyProfile"`
+	CompanyContactPerson string `json:"companyContactPerson"`
+	LogoFilePath         string `json:"logoFilePath"`
+	AddressType          string `json:"addressType"`
+	AddressField         string `json:"addressField"`
+	PhoneNumber          string `json:"phoneNumber"`
+	Fax                  string `json:"fax"`
+	Town                 string `json:"town"`
+}
+
+// BoardMember represents a board of directors member.
+type BoardMember struct {
+	FirstName       string  `json:"firstName"`
+	MiddleName      string  `json:"middleName"`
+	LastName        string  `json:"lastName"`
+	Designation     string  `json:"designation"`
+	MemberPhotoPath *string `json:"memberPhotoPath"`
+	Description     string  `json:"description"`
+}
+
+// FullName returns the complete name of the board member.
+func (b *BoardMember) FullName() string {
+	if b.MiddleName != "" {
+		return b.FirstName + " " + b.MiddleName + " " + b.LastName
+	}
+	return b.FirstName + " " + b.LastName
+}
+
+// CorporateAction represents a corporate action (bonus, rights, cash dividend).
+type CorporateAction struct {
+	ActiveStatus          string   `json:"activeStatus"`
+	AuthorizationComments *string  `json:"authorizationComments"`
+	SubmittedDate         string   `json:"submittedDate"`
+	FilePath              string   `json:"filePath"`
+	DocumentID            int32    `json:"documentId"`
+	RatioNum              float64  `json:"ratioNum"`
+	RatioDen              float64  `json:"ratioDen"`
+	CashDividend          *float64 `json:"cashDividend"`
+	FiscalYear            string   `json:"fiscalYear"`
+	RightAmountPerShare   *float64 `json:"rightAmountPerShare"`
+	BonusPercentage       float64  `json:"bonusPercentage"`
+	RightPercentage       *float64 `json:"rightPercentage"`
+	SdID                  int32    `json:"sdId"`
+}
+
+// IsBonus returns true if this corporate action is a bonus share.
+func (c *CorporateAction) IsBonus() bool {
+	return c.BonusPercentage > 0
+}
+
+// IsRight returns true if this corporate action is a rights issue.
+func (c *CorporateAction) IsRight() bool {
+	return c.RightPercentage != nil && *c.RightPercentage > 0
+}
+
+// IsCashDividend returns true if this corporate action is a cash dividend.
+func (c *CorporateAction) IsCashDividend() bool {
+	return c.CashDividend != nil && *c.CashDividend > 0
+}
+
+// FinancialYear represents a fiscal year.
+type FinancialYear struct {
+	ID          int32  `json:"id"`
+	FYName      string `json:"fyName"`
+	FYNameNepali string `json:"fyNameNepali"`
+	FromYear    string `json:"fromYear"`
+	ToYear      string `json:"toYear"`
+}
+
+// QuarterMaster represents a fiscal quarter.
+type QuarterMaster struct {
+	ID          int32  `json:"id"`
+	QuarterName string `json:"quarterName"`
+}
+
+// ReportTypeMaster represents a report type (Annual/Quarterly).
+type ReportTypeMaster struct {
+	ID         int32  `json:"id"`
+	ReportName string `json:"reportName"`
+}
+
+// FiscalReport contains financial metrics from a report.
+type FiscalReport struct {
+	ID               int32             `json:"id"`
+	QuarterMaster    *QuarterMaster    `json:"quarterMaster"`
+	ReportTypeMaster *ReportTypeMaster `json:"reportTypeMaster"`
+	FinancialYear    *FinancialYear    `json:"financialYear"`
+	PEValue          float64           `json:"peValue"`
+	EPSValue         float64           `json:"epsValue"`
+	PaidUpCapital    float64           `json:"paidUpCapital"`
+	ProfitAmount     float64           `json:"profitAmount"`
+	NetWorthPerShare float64           `json:"netWorthPerShare"`
+	Remarks          *string           `json:"remarks"`
+}
+
+// ReportDocument represents a document attached to a report.
+type ReportDocument struct {
+	ID            int32  `json:"id"`
+	SubmittedDate string `json:"submittedDate"`
+	FilePath      string `json:"filePath"`
+	EncryptedID   string `json:"encryptedId"`
+}
+
+// Report represents a quarterly or annual financial report.
+type Report struct {
+	ID                           int32            `json:"id"`
+	ActiveStatus                 string           `json:"activeStatus"`
+	ModifiedDate                 string           `json:"modifiedDate"`
+	ApplicationType              int32            `json:"applicationType"`
+	ApplicationStatus            int32            `json:"applicationStatus"`
+	FiscalReport                 *FiscalReport    `json:"fiscalReport"`
+	ApplicationDocumentDetailsList []ReportDocument `json:"applicationDocumentDetailsList"`
+}
+
+// IsAnnual returns true if this is an annual report.
+func (r *Report) IsAnnual() bool {
+	if r.FiscalReport != nil && r.FiscalReport.ReportTypeMaster != nil {
+		return r.FiscalReport.ReportTypeMaster.ReportName == "Annual Report"
+	}
+	return false
+}
+
+// IsQuarterly returns true if this is a quarterly report.
+func (r *Report) IsQuarterly() bool {
+	if r.FiscalReport != nil && r.FiscalReport.ReportTypeMaster != nil {
+		return r.FiscalReport.ReportTypeMaster.ReportName == "Quarterly Report"
+	}
+	return false
+}
+
+// QuarterName returns the quarter name (e.g., "First Quarter") or empty if annual.
+func (r *Report) QuarterName() string {
+	if r.FiscalReport != nil && r.FiscalReport.QuarterMaster != nil {
+		return r.FiscalReport.QuarterMaster.QuarterName
+	}
+	return ""
+}
+
+// DividendNotice contains dividend declaration details.
+type DividendNotice struct {
+	ID            int32          `json:"id"`
+	FinancialYear *FinancialYear `json:"financialYear"`
+	CashDividend  float64        `json:"cashDividend"`
+	BonusShare    float64        `json:"bonusShare"`
+	RightShare    float64        `json:"rightShare"`
+	Remarks       *string        `json:"remarks"`
+}
+
+// CompanyNews contains news/announcement details.
+type CompanyNews struct {
+	ID              int32           `json:"id"`
+	NewsSource      string          `json:"newsSource"`
+	NewsHeadline    string          `json:"newsHeadline"`
+	NewsBody        string          `json:"newsBody"`
+	NewsType        string          `json:"newsType"`
+	ExpiryDate      string          `json:"expiryDate"`
+	DividendsNotice *DividendNotice `json:"dividendsNotice"`
+}
+
+// Dividend represents a dividend declaration.
+type Dividend struct {
+	ID                int32        `json:"id"`
+	ActiveStatus      string       `json:"activeStatus"`
+	ModifiedDate      string       `json:"modifiedDate"`
+	ApplicationType   int32        `json:"applicationType"`
+	ApplicationStatus int32        `json:"applicationStatus"`
+	CompanyNews       *CompanyNews `json:"companyNews"`
+}
+
+// HasCashDividend returns true if this dividend includes cash.
+func (d *Dividend) HasCashDividend() bool {
+	if d.CompanyNews != nil && d.CompanyNews.DividendsNotice != nil {
+		return d.CompanyNews.DividendsNotice.CashDividend > 0
+	}
+	return false
+}
+
+// HasBonusDividend returns true if this dividend includes bonus shares.
+func (d *Dividend) HasBonusDividend() bool {
+	if d.CompanyNews != nil && d.CompanyNews.DividendsNotice != nil {
+		return d.CompanyNews.DividendsNotice.BonusShare > 0
+	}
+	return false
+}
+
+// CashPercentage returns the cash dividend percentage.
+func (d *Dividend) CashPercentage() float64 {
+	if d.CompanyNews != nil && d.CompanyNews.DividendsNotice != nil {
+		return d.CompanyNews.DividendsNotice.CashDividend
+	}
+	return 0
+}
+
+// BonusPercentage returns the bonus dividend percentage.
+func (d *Dividend) BonusPercentage() float64 {
+	if d.CompanyNews != nil && d.CompanyNews.DividendsNotice != nil {
+		return d.CompanyNews.DividendsNotice.BonusShare
+	}
+	return 0
+}
+
+// FiscalYear returns the fiscal year of the dividend.
+func (d *Dividend) FiscalYear() string {
+	if d.CompanyNews != nil && d.CompanyNews.DividendsNotice != nil && d.CompanyNews.DividendsNotice.FinancialYear != nil {
+		return d.CompanyNews.DividendsNotice.FinancialYear.FYNameNepali
+	}
+	return ""
+}

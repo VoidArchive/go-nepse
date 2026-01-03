@@ -1,80 +1,38 @@
-// Package nepse provides a modern, type-safe Go client for the NEPSE (Nepal Stock Exchange) API.
+// Package nepse provides a type-safe Go client for NEPSE market data.
 //
-// This package offers comprehensive access to NEPSE market data including:
-//   - Market summaries and status information
-//   - Security and company listings
-//   - Real-time and historical price data
-//   - Trading volume and floor sheet information
-//   - Market indices and sub-indices
-//   - Top gainers, losers, and trading statistics
-//   - Supply and demand data
-//   - Market depth information
-//   - Graph data for various indices and securities
+// Covers market summaries, securities, prices, floor sheets, indices,
+// company fundamentals, dividends, and corporate actions.
 //
-// The client is built with clean architecture principles, proper error handling,
-// and type safety throughout. It provides both high-level convenience methods
-// and low-level access to the underlying API endpoints.
+// Example:
 //
-// Example usage:
+//	opts := nepse.DefaultOptions()
+//	opts.TLSVerification = false // NEPSE servers have certificate issues
 //
-//	package main
-//
-//	import (
-//		"context"
-//		"fmt"
-//		"log"
-//
-//		"github.com/voidarchive/go-nepse"
-//	)
-//
-//	func main() {
-//		// Create a new NEPSE client with default options
-//		opts := nepse.DefaultOptions()
-//		opts.TLSVerification = false // Required due to NEPSE server TLS issues
-//
-//		client, err := nepse.NewClient(opts)
-//		if err != nil {
-//			log.Fatalf("Failed to create NEPSE client: %v", err)
-//		}
-//		defer client.Close()
-//
-//		ctx := context.Background()
-//
-//		// Get market summary
-//		summary, err := client.MarketSummary(ctx)
-//		if err != nil {
-//			log.Fatalf("Failed to get market summary: %v", err)
-//		}
-//		fmt.Printf("Total Turnover: Rs. %.2f\n", summary.TotalTurnover)
-//
-//		// Get company details directly by symbol
-//		details, err := client.CompanyBySymbol(ctx, "NABIL")
-//		if err != nil {
-//			log.Fatalf("Failed to get company details: %v", err)
-//		}
-//		fmt.Printf("Company: %s, LTP: Rs. %.2f\n", details.SecurityName, details.LastTradedPrice)
+//	client, err := nepse.NewClient(opts)
+//	if err != nil {
+//		log.Fatal(err)
 //	}
+//	defer client.Close()
+//
+//	summary, err := client.MarketSummary(context.Background())
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	fmt.Printf("Turnover: Rs. %.2f\n", summary.TotalTurnover)
 package nepse
 
-// Version information
 const (
-	// Version is the current version of the nepse package.
-	Version = "0.1.2"
-
-	// UserAgent is the default user agent string used by the client.
+	Version   = "0.2.0"
 	UserAgent = "go-nepse/" + Version
 )
 
-// Common business date formats used by the NEPSE API.
+// Date formats used by NEPSE API.
 const (
-	// DateFormat is the standard date format used by NEPSE API (YYYY-MM-DD).
-	DateFormat = "2006-01-02"
-
-	// DateTimeFormat is the standard datetime format used by NEPSE API.
+	DateFormat     = "2006-01-02"
 	DateTimeFormat = "2006-01-02 15:04:05"
 )
 
-// Sector names commonly used in the NEPSE market.
+// Sector names.
 const (
 	SectorBanking          = "Banking"
 	SectorDevelopmentBank  = "Development Bank"

@@ -31,6 +31,13 @@ type Endpoints struct {
 	CompanyFloorsheet   string
 	MarketDepth         string
 
+	// Company fundamentals & financial data
+	CompanyProfile   string
+	BoardOfDirectors string
+	CorporateActions string
+	Reports          string
+	Dividend         string
+
 	// Graph endpoints (index charts)
 	GraphNepseIndex          string
 	GraphSensitiveIndex      string
@@ -88,6 +95,13 @@ func DefaultEndpoints() Endpoints {
 		CompanyPriceHistory: "/api/nots/market/history/security",
 		CompanyFloorsheet:   "/api/nots/security/floorsheet",
 		MarketDepth:         "/api/nots/nepse-data/marketdepth",
+
+		// Company fundamentals & financial data
+		CompanyProfile:   "/api/nots/security/profile",
+		BoardOfDirectors: "/api/nots/security/boardOfDirectors",
+		CorporateActions: "/api/nots/security/corporate-actions",
+		Reports:          "/api/nots/application/reports",
+		Dividend:         "/api/nots/application/dividend",
 
 		// Graph endpoints (index charts)
 		GraphNepseIndex:            "/api/nots/graph/index/58",

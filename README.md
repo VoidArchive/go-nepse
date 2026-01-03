@@ -1,8 +1,8 @@
 # go-nepse
 
-A modern, type-safe Go client library for the NEPSE (Nepal Stock Exchange) API. This library provides comprehensive access to NEPSE market data with clean architecture, proper error handling, and full type safety.
+Type-safe Go client for NEPSE market data.
 
-> **Disclaimer**: This is an **unofficial** library that interacts with NEPSE's undocumented internal API. It is intended for educational and personal use only. **Do not use this library for commercial projects.** The API may change without notice, and there are no guarantees of accuracy, reliability, or availability. Use at your own risk.
+> **Disclaimer**: Unofficial library using NEPSE's undocumented API. For educational/personal use only. May break without notice.
 
 ![NEPSE Go Demo](assets/market_overview.png)
 
@@ -41,7 +41,7 @@ import (
 func main() {
     // Create a new NEPSE client
     opts := nepse.DefaultOptions()
-    opts.TLSVerification = false // Required due to NEPSE server TLS issues
+    opts.TLSVerification = false // NEPSE servers have certificate issues
 
     client, err := nepse.NewClient(opts)
     if err != nil {
@@ -121,21 +121,29 @@ func main() {
 | `DailyNepseIndexGraph()` | Main NEPSE index chart |
 | `DailyScripGraph(id)` | Intraday chart for a security |
 
+### Company Fundamentals
+
+| Method | Description |
+|--------|-------------|
+| `CompanyProfile(id)` / `CompanyProfileBySymbol(symbol)` | Detailed company profile (contact, address, etc.) |
+| `BoardOfDirectors(id)` / `BoardOfDirectorsBySymbol(symbol)` | Board members with designations |
+| `Reports(id)` / `ReportsBySymbol(symbol)` | Quarterly & annual reports with PE, EPS, book value |
+| `CorporateActions(id)` / `CorporateActionsBySymbol(symbol)` | Bonus shares, rights issues (approval/distribution) |
+| `Dividends(id)` / `DividendsBySymbol(symbol)` | Dividend declarations (cash & bonus) |
+
+> **Note**: Corporate Actions tracks when bonus/rights shares were *approved/distributed*, while Dividends tracks when they were *declared*. There may be a 1-year lag between declaration and distribution.
+
 ## Configuration
 
 ```go
 opts := nepse.DefaultOptions()
-opts.TLSVerification = false  // Required due to NEPSE server TLS issues
+opts.TLSVerification = false // NEPSE servers have certificate issues
 opts.HTTPTimeout = 30 * time.Second
 opts.MaxRetries = 3
 opts.RetryDelay = time.Second
 
 client, err := nepse.NewClient(opts)
 ```
-
-### TLS Verification
-
-The `TLSVerification: false` option is required due to TLS configuration issues on NEPSE's servers. This is a known limitation of the NEPSE API infrastructure.
 
 ## Error Handling
 
@@ -162,14 +170,12 @@ if err != nil {
 
 ## Production Checklist
 
-Before using this library in any production-like environment, ensure you have addressed the following:
-
-- [ ] **Accept Undocumented API Risks**: Acknowledge that this library uses an unofficial API. It **will** break if NEPSE updates their infrastructure.
-- [ ] **TLS Security**: Address the `TLSVerification: false` requirement. In production, consider routing requests through a secure proxy that handles the connection to NEPSE.
-- [ ] **Caching Strategy**: Implement application-level caching. The NEPSE API is sensitive to high traffic and may block requests if hit too frequently.
-- [ ] **Error Monitoring**: Listen for `nepse.NepseError` and set up alerts for `ErrorTypeNetwork` or `ErrorTypeInternal` which often indicate API changes.
-- [ ] **Rate Limiting**: Ensure your application respects NEPSE's implicit rate limits to avoid IP blocks.
-- [ ] **Fallback Plan**: Have a manual or alternative data source strategy for when the API is unavailable during trading hours.
+- [ ] **API Risks**: Unofficial API, will break when NEPSE updates infrastructure
+- [ ] **TLS Security**: Route through secure proxy to handle certificate issues
+- [ ] **Caching**: Cache responses to avoid rate limiting
+- [ ] **Monitoring**: Alert on `ErrorTypeNetwork` or `ErrorTypeInternal`
+- [ ] **Rate Limiting**: Respect implicit limits to avoid IP blocks
+- [ ] **Fallback**: Have alternative data source for outages
 
 
 ## Examples

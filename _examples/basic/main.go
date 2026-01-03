@@ -282,6 +282,103 @@ func main() {
 	}
 
 	// ═══════════════════════════════════════════════════════════════════
+	// COMPANY FUNDAMENTALS
+	// ═══════════════════════════════════════════════════════════════════
+	if securityID != 0 {
+		printSection("COMPANY FUNDAMENTALS")
+
+		// Company Profile
+		printSubSection(fmt.Sprintf("Profile: %s", symbol))
+		if profile, err := client.CompanyProfile(ctx, securityID); err != nil {
+			printError("CompanyProfile", err)
+		} else {
+			printKV("Name", profile.CompanyName)
+			printKV("Contact", profile.CompanyContactPerson)
+			printKV("Email", profile.CompanyEmail)
+			printKV("Address", fmt.Sprintf("%s, %s", profile.AddressField, profile.Town))
+			printKV("Phone", profile.PhoneNumber)
+		}
+
+		// Board of Directors
+		printSubSection("Board of Directors")
+		if board, err := client.BoardOfDirectors(ctx, securityID); err != nil {
+			printError("BoardOfDirectors", err)
+		} else {
+			printKV("Total Members", fmt.Sprintf("%d", len(board)))
+			for _, m := range board[:min(3, len(board))] {
+				printKV(fmt.Sprintf("  %s", m.Designation), m.FullName())
+			}
+			if len(board) > 3 {
+				printDim(fmt.Sprintf("... and %d more", len(board)-3))
+			}
+		}
+
+		// Financial Reports (latest)
+		printSubSection("Financial Reports")
+		if reports, err := client.Reports(ctx, securityID); err != nil {
+			printError("Reports", err)
+		} else if len(reports) == 0 {
+			printDim("No reports available")
+		} else {
+			printKV("Total Reports", fmt.Sprintf("%d", len(reports)))
+			for _, r := range reports[:min(3, len(reports))] {
+				if r.FiscalReport != nil {
+					reportType := "Report"
+					if r.IsAnnual() {
+						reportType = "Annual"
+					} else if r.IsQuarterly() {
+						reportType = fmt.Sprintf("Q%s", r.QuarterName()[:1])
+					}
+					fy := ""
+					if r.FiscalReport.FinancialYear != nil {
+						fy = r.FiscalReport.FinancialYear.FYNameNepali
+					}
+					printKV(fmt.Sprintf("  %s %s", reportType, fy),
+						fmt.Sprintf("EPS=%.2f, PE=%.2f, Book=%.2f",
+							r.FiscalReport.EPSValue, r.FiscalReport.PEValue, r.FiscalReport.NetWorthPerShare))
+				}
+			}
+		}
+
+		// Corporate Actions
+		printSubSection("Corporate Actions")
+		if actions, err := client.CorporateActions(ctx, securityID); err != nil {
+			printError("CorporateActions", err)
+		} else if len(actions) == 0 {
+			printDim("No corporate actions available")
+		} else {
+			for _, a := range actions[:min(3, len(actions))] {
+				actionType := "Action"
+				if a.IsBonus() {
+					actionType = fmt.Sprintf("Bonus %.2f%%", a.BonusPercentage)
+				} else if a.IsRight() {
+					actionType = "Rights"
+				} else if a.IsCashDividend() {
+					actionType = "Cash Dividend"
+				}
+				printKV(fmt.Sprintf("  FY %s", a.FiscalYear), actionType)
+			}
+		}
+
+		// Dividends
+		printSubSection("Dividends")
+		if dividends, err := client.Dividends(ctx, securityID); err != nil {
+			printError("Dividends", err)
+		} else if len(dividends) == 0 {
+			printDim("No dividend history available")
+		} else {
+			for _, d := range dividends[:min(3, len(dividends))] {
+				fy := d.FiscalYear()
+				if fy == "" {
+					fy = "N/A"
+				}
+				printKV(fmt.Sprintf("  FY %s", fy),
+					fmt.Sprintf("Cash=%.2f%%, Bonus=%.2f%%", d.CashPercentage(), d.BonusPercentage()))
+			}
+		}
+	}
+
+	// ═══════════════════════════════════════════════════════════════════
 	// PRICE & TRADING DATA
 	// ═══════════════════════════════════════════════════════════════════
 	printSection("PRICE & TRADING DATA")
