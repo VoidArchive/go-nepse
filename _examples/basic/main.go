@@ -95,7 +95,7 @@ func main() {
 		if idx.PercentChange < 0 {
 			changeColor = red
 		}
-		printKV("Value", fmt.Sprintf("%.2f", idx.IndexValue))
+		printKV("Value", fmt.Sprintf("%.2f", idx.PreviousClose))
 		printKV("Change", fmt.Sprintf("%s%.2f (%.2f%%)%s", changeColor, idx.PointChange, idx.PercentChange, reset))
 		printKV("High / Low", fmt.Sprintf("%.2f / %.2f", idx.High, idx.Low))
 		printKV("52W High / Low", fmt.Sprintf("%.2f / %.2f", idx.FiftyTwoWeekHigh, idx.FiftyTwoWeekLow))

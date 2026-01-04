@@ -88,17 +88,63 @@ type Security struct {
 
 // Company represents company information.
 type Company struct {
-	ID                   int32   `json:"id"`
-	Symbol               string  `json:"symbol"`
-	SecurityName         string  `json:"securityName"`
-	SectorName           string  `json:"sectorName"`
-	MarketCapitalization float64 `json:"marketCapitalization"`
-	ShareOutstanding     int64   `json:"shareOutstanding"`
-	ShareOutstandingDate string  `json:"shareOutstandingDate"`
-	ListedShares         int64   `json:"listedShares"`
-	PaidUpValue          float64 `json:"paidUpValue"`
-	IsPromoterListed     bool    `json:"isPromoterListed"`
-	HasTradingPermission bool    `json:"hasTradingPermission"`
+	ID             int32  `json:"id"`
+	CompanyName    string `json:"companyName"`
+	Symbol         string `json:"symbol"`
+	SecurityName   string `json:"securityName"`
+	Status         string `json:"status"`
+	CompanyEmail   string `json:"companyEmail"`
+	Website        string `json:"website"`
+	SectorName     string `json:"sectorName"`
+	RegulatoryBody string `json:"regulatoryBody"`
+	InstrumentType string `json:"instrumentType"`
+}
+
+// InstrumentType represents the type of financial instrument.
+type InstrumentType struct {
+	ID           int32  `json:"id"`
+	Code         string `json:"code"`
+	Description  string `json:"description"`
+	ActiveStatus string `json:"activeStatus"`
+}
+
+// ParsedValue represents a value with its source string and parsed numeric value.
+type ParsedValue struct {
+	Source      string  `json:"source"`
+	ParsedValue float64 `json:"parsedValue"`
+}
+
+// ShareGroup represents the share group classification.
+type ShareGroup struct {
+	ID              int32   `json:"id"`
+	Name            string  `json:"name"`
+	Description     string  `json:"description"`
+	CapitalRangeMin int64   `json:"capitalRangeMin"`
+	ModifiedBy      *string `json:"modifiedBy"`
+	ModifiedDate    *string `json:"modifiedDate"`
+	ActiveStatus    string  `json:"activeStatus"`
+	IsDefault       string  `json:"isDefault"`
+}
+
+// SectorMaster represents sector information.
+type SectorMaster struct {
+	ID                int32  `json:"id"`
+	SectorDescription string `json:"sectorDescription"`
+	ActiveStatus      string `json:"activeStatus"`
+	RegulatoryBody    string `json:"regulatoryBody"`
+}
+
+// CompanyInfo represents company information within classification.
+type CompanyInfo struct {
+	ID                        int32        `json:"id"`
+	CompanyShortName          string       `json:"companyShortName"`
+	CompanyName               string       `json:"companyName"`
+	Email                     string       `json:"email"`
+	CompanyWebsite            string       `json:"companyWebsite"`
+	CompanyContactPerson      string       `json:"companyContactPerson"`
+	SectorMaster              SectorMaster `json:"sectorMaster"`
+	CompanyRegistrationNumber string       `json:"companyRegistrationNumber"`
+	ActiveStatus              string       `json:"activeStatus"`
 }
 
 // TodayPrice represents today's price data for a security.
@@ -437,11 +483,11 @@ func (c *CorporateAction) IsCashDividend() bool {
 
 // FinancialYear represents a fiscal year.
 type FinancialYear struct {
-	ID          int32  `json:"id"`
-	FYName      string `json:"fyName"`
+	ID           int32  `json:"id"`
+	FYName       string `json:"fyName"`
 	FYNameNepali string `json:"fyNameNepali"`
-	FromYear    string `json:"fromYear"`
-	ToYear      string `json:"toYear"`
+	FromYear     string `json:"fromYear"`
+	ToYear       string `json:"toYear"`
 }
 
 // QuarterMaster represents a fiscal quarter.
@@ -480,12 +526,12 @@ type ReportDocument struct {
 
 // Report represents a quarterly or annual financial report.
 type Report struct {
-	ID                           int32            `json:"id"`
-	ActiveStatus                 string           `json:"activeStatus"`
-	ModifiedDate                 string           `json:"modifiedDate"`
-	ApplicationType              int32            `json:"applicationType"`
-	ApplicationStatus            int32            `json:"applicationStatus"`
-	FiscalReport                 *FiscalReport    `json:"fiscalReport"`
+	ID                             int32            `json:"id"`
+	ActiveStatus                   string           `json:"activeStatus"`
+	ModifiedDate                   string           `json:"modifiedDate"`
+	ApplicationType                int32            `json:"applicationType"`
+	ApplicationStatus              int32            `json:"applicationStatus"`
+	FiscalReport                   *FiscalReport    `json:"fiscalReport"`
 	ApplicationDocumentDetailsList []ReportDocument `json:"applicationDocumentDetailsList"`
 }
 

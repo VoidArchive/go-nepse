@@ -17,11 +17,11 @@ type Endpoints struct {
 	NepseIndex string
 
 	// Top ten lists
-	TopGainers      string
-	TopLosers       string
-	TopTrade        string
-	TopTransaction  string
-	TopTurnover     string
+	TopGainers     string
+	TopLosers      string
+	TopTrade       string
+	TopTransaction string
+	TopTurnover    string
 
 	// Security/Company data
 	SecurityList        string
@@ -39,23 +39,23 @@ type Endpoints struct {
 	Dividend         string
 
 	// Graph endpoints (index charts)
-	GraphNepseIndex          string
-	GraphSensitiveIndex      string
-	GraphFloatIndex          string
-	GraphSensitiveFloatIndex string
-	GraphBankingSubindex     string
-	GraphDevBankSubindex     string
-	GraphFinanceSubindex     string
-	GraphHotelSubindex       string
-	GraphHydroSubindex       string
-	GraphInvestmentSubindex  string
-	GraphLifeInsSubindex     string
-	GraphManufacturingSubindex  string
-	GraphMicrofinanceSubindex   string
-	GraphMutualFundSubindex     string
-	GraphNonLifeInsSubindex     string
-	GraphOthersSubindex         string
-	GraphTradingSubindex        string
+	GraphNepseIndex            string
+	GraphSensitiveIndex        string
+	GraphFloatIndex            string
+	GraphSensitiveFloatIndex   string
+	GraphBankingSubindex       string
+	GraphDevBankSubindex       string
+	GraphFinanceSubindex       string
+	GraphHotelSubindex         string
+	GraphHydroSubindex         string
+	GraphInvestmentSubindex    string
+	GraphLifeInsSubindex       string
+	GraphManufacturingSubindex string
+	GraphMicrofinanceSubindex  string
+	GraphMutualFundSubindex    string
+	GraphNonLifeInsSubindex    string
+	GraphOthersSubindex        string
+	GraphTradingSubindex       string
 
 	// Graph endpoints (company)
 	CompanyDailyGraph string
