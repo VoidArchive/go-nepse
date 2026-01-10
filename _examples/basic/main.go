@@ -281,6 +281,21 @@ func main() {
 		}
 	}
 
+	// Security Detail (with shareholding)
+	if securityID != 0 {
+		printSubSection(fmt.Sprintf("Security Detail (Shareholding): %s", symbol))
+		if det, err := client.SecurityDetail(ctx, securityID); err != nil {
+			printError("SecurityDetail", err)
+		} else {
+			printKV("ISIN", det.ISIN)
+			printKV("Listed Shares", formatNumber(float64(det.ListedShares)))
+			printKV("Face Value", fmt.Sprintf("Rs. %.0f", det.FaceValue))
+			printKV("Promoter", fmt.Sprintf("%.2f%% (%s shares)", det.PromoterPercent, formatNumber(float64(det.PromoterShares))))
+			printKV("Public", fmt.Sprintf("%.2f%% (%s shares)", det.PublicPercent, formatNumber(float64(det.PublicShares))))
+			printKV("Market Cap", formatNumber(det.MarketCap))
+		}
+	}
+
 	// ═══════════════════════════════════════════════════════════════════
 	// COMPANY FUNDAMENTALS
 	// ═══════════════════════════════════════════════════════════════════

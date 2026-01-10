@@ -316,6 +316,73 @@ func (c *Client) CompanyBySymbol(ctx context.Context, symbol string) (*CompanyDe
 	return c.Company(ctx, security.ID)
 }
 
+// SecurityDetail returns comprehensive security information including shareholding data.
+// This uses a POST request to fetch additional data not available via [Client.Company].
+func (c *Client) SecurityDetail(ctx context.Context, securityID int32) (*SecurityDetail, error) {
+	payloadID, err := c.computeScripGraphPayloadID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	endpoint := fmt.Sprintf("%s/%d", c.config.Endpoints.CompanyDetails, securityID)
+
+	var raw SecurityDetailRaw
+	if err := c.apiPostRequest(ctx, endpoint, graphPostPayload{ID: payloadID}, &raw); err != nil {
+		return nil, err
+	}
+
+	return &SecurityDetail{
+		ID:               raw.Security.ID,
+		Symbol:           raw.Security.Symbol,
+		ISIN:             raw.Security.Isin,
+		PermittedToTrade: raw.Security.PermittedToTrade,
+		FaceValue:        raw.Security.FaceValue,
+
+		ListedShares:    int64(raw.StockListedShares),
+		PaidUpCapital:   raw.PaidUpCapital,
+		IssuedCapital:   raw.IssuedCapital,
+		MarketCap:       raw.MarketCapitalization,
+		PublicShares:    raw.PublicShares,
+		PublicPercent:   raw.PublicPercentage,
+		PromoterShares:  int64(raw.PromoterShares),
+		PromoterPercent: raw.PromoterPercentage,
+
+		OpenPrice:           raw.SecurityDailyTradeDTO.OpenPrice,
+		HighPrice:           raw.SecurityDailyTradeDTO.HighPrice,
+		LowPrice:            raw.SecurityDailyTradeDTO.LowPrice,
+		ClosePrice:          raw.SecurityDailyTradeDTO.ClosePrice,
+		LastTradedPrice:     raw.SecurityDailyTradeDTO.LastTradedPrice,
+		PreviousClose:       raw.SecurityDailyTradeDTO.PreviousClose,
+		TotalTradedQuantity: raw.SecurityDailyTradeDTO.TotalTradeQuantity,
+		TotalTrades:         raw.SecurityDailyTradeDTO.TotalTrades,
+		FiftyTwoWeekHigh:    raw.SecurityDailyTradeDTO.FiftyTwoWeekHigh,
+		FiftyTwoWeekLow:     raw.SecurityDailyTradeDTO.FiftyTwoWeekLow,
+		BusinessDate:        raw.SecurityDailyTradeDTO.BusinessDate,
+		LastUpdatedDateTime: raw.SecurityDailyTradeDTO.LastUpdatedDateTime,
+	}, nil
+}
+
+// SecurityDetailBySymbol returns comprehensive security information by ticker symbol.
+func (c *Client) SecurityDetailBySymbol(ctx context.Context, symbol string) (*SecurityDetail, error) {
+	security, err := c.findSecurityBySymbol(ctx, symbol)
+	if err != nil {
+		return nil, err
+	}
+	return c.SecurityDetail(ctx, security.ID)
+}
+
+// DebugSecurityDetailRaw returns the raw JSON response from the security detail endpoint.
+// This is useful for debugging the API response structure.
+func (c *Client) DebugSecurityDetailRaw(ctx context.Context, securityID int32) ([]byte, error) {
+	payloadID, err := c.computeScripGraphPayloadID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	endpoint := fmt.Sprintf("%s/%d", c.config.Endpoints.CompanyDetails, securityID)
+	return c.apiPostRequestRaw(ctx, endpoint, graphPostPayload{ID: payloadID})
+}
+
 // SectorScrips returns a map of sector names to their constituent security symbols.
 func (c *Client) SectorScrips(ctx context.Context) (SectorScrips, error) {
 	// Use company list which includes sector information

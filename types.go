@@ -384,6 +384,78 @@ type CompanyDetails struct {
 	LastUpdatedDateTime string  `json:"lastUpdatedDateTime"`
 }
 
+// SecurityDetailRaw represents the raw response from POST /api/nots/security/{id}.
+// This endpoint returns additional shareholding data not available via GET.
+type SecurityDetailRaw struct {
+	Security struct {
+		ID               int32   `json:"id"`
+		Symbol           string  `json:"symbol"`
+		Isin             string  `json:"isin"`
+		PermittedToTrade string  `json:"permittedToTrade"`
+		FaceValue        float64 `json:"faceValue"`
+	} `json:"security"`
+	SecurityDailyTradeDTO struct {
+		SecurityID          string  `json:"securityId"`
+		OpenPrice           float64 `json:"openPrice"`
+		HighPrice           float64 `json:"highPrice"`
+		LowPrice            float64 `json:"lowPrice"`
+		ClosePrice          float64 `json:"closePrice"`
+		TotalTradeQuantity  int64   `json:"totalTradeQuantity"`
+		TotalTrades         int32   `json:"totalTrades"`
+		LastTradedPrice     float64 `json:"lastTradedPrice"`
+		PreviousClose       float64 `json:"previousClose"`
+		FiftyTwoWeekHigh    float64 `json:"fiftyTwoWeekHigh"`
+		FiftyTwoWeekLow     float64 `json:"fiftyTwoWeekLow"`
+		LastUpdatedDateTime string  `json:"lastUpdatedDateTime"`
+		BusinessDate        string  `json:"businessDate"`
+	} `json:"securityDailyTradeDto"`
+
+	// Shareholding data at root level
+	StockListedShares    float64 `json:"stockListedShares"`
+	PaidUpCapital        float64 `json:"paidUpCapital"`
+	IssuedCapital        float64 `json:"issuedCapital"`
+	MarketCapitalization float64 `json:"marketCapitalization"`
+	PublicShares         int64   `json:"publicShares"`
+	PublicPercentage     float64 `json:"publicPercentage"`
+	PromoterShares       float64 `json:"promoterShares"`
+	PromoterPercentage   float64 `json:"promoterPercentage"`
+}
+
+// SecurityDetail represents comprehensive security information including shareholding.
+// Use [Client.SecurityDetail] to fetch this data via POST request.
+type SecurityDetail struct {
+	// Basic info
+	ID               int32   `json:"id"`
+	Symbol           string  `json:"symbol"`
+	ISIN             string  `json:"isin"`
+	PermittedToTrade string  `json:"permittedToTrade"`
+	FaceValue        float64 `json:"faceValue"` // Typically 100 or 10
+
+	// Shareholding data
+	ListedShares    int64   `json:"listedShares"`
+	PaidUpCapital   float64 `json:"paidUpCapital"`
+	IssuedCapital   float64 `json:"issuedCapital"`
+	MarketCap       float64 `json:"marketCap"`
+	PublicShares    int64   `json:"publicShares"`
+	PublicPercent   float64 `json:"publicPercent"`
+	PromoterShares  int64   `json:"promoterShares"`
+	PromoterPercent float64 `json:"promoterPercent"`
+
+	// Price data
+	OpenPrice           float64 `json:"openPrice"`
+	HighPrice           float64 `json:"highPrice"`
+	LowPrice            float64 `json:"lowPrice"`
+	ClosePrice          float64 `json:"closePrice"`
+	LastTradedPrice     float64 `json:"lastTradedPrice"`
+	PreviousClose       float64 `json:"previousClose"`
+	TotalTradedQuantity int64   `json:"totalTradedQuantity"`
+	TotalTrades         int32   `json:"totalTrades"`
+	FiftyTwoWeekHigh    float64 `json:"fiftyTwoWeekHigh"`
+	FiftyTwoWeekLow     float64 `json:"fiftyTwoWeekLow"`
+	BusinessDate        string  `json:"businessDate"`
+	LastUpdatedDateTime string  `json:"lastUpdatedDateTime"`
+}
+
 // LiveMarketEntry represents live market data entry.
 type LiveMarketEntry struct {
 	SecurityID          string  `json:"securityId"`
