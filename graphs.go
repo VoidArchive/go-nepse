@@ -39,8 +39,9 @@ func (c *Client) computeBasePayloadID(ctx context.Context) (int, int, error) {
 		}
 	}
 
-	// Get current day of month
-	day := time.Now().Day()
+	// Get current day of month in Nepal timezone (NEPSE expects NPT)
+	loc, _ := time.LoadLocation("Asia/Kathmandu")
+	day := time.Now().In(loc).Day()
 
 	// Compute base value: dummyData[dummyID] + dummyID + 2 * day
 	e := dummyData[dummyID] + dummyID + 2*day
